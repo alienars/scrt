@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Modals from "../Modals/Modals";
 import Aes from "crypto-js/aes";
@@ -7,10 +6,11 @@ import Pbkdf2 from "crypto-js/pbkdf2";
 import Utf8 from "crypto-js/enc-utf8";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
-interface HeroProps {
+import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
-}
-
+interface HeroProps {}
 
 const Hero: React.FC<HeroProps> = () => {
   const [passBtnEl, setPassBtnEl] = useState<HTMLElement | null>(null);
@@ -26,7 +26,7 @@ const Hero: React.FC<HeroProps> = () => {
   const [textEl, setTextEl] = useState<HTMLInputElement | null>(null);
   const [loadingSvgEl, setLoadingSvgEl] = useState<HTMLElement | null>(null);
   const [saveSvgEl, setSaveSvgEl] = useState<HTMLElement | null>(null);
-  
+
   useEffect(() => {
     setPassBtnEl(document.getElementById("pass_btn"));
     setKeyEl(document.getElementById("key") as any);
@@ -41,7 +41,7 @@ const Hero: React.FC<HeroProps> = () => {
     setTextEl(document.getElementById("text") as any);
     setLoadingSvgEl(document.getElementById("loading_svg"));
     setSaveSvgEl(document.getElementById("save_svg"));
-    
+
     if (url.includes("?")) {
       let questchari = url.indexOf("?");
       if (url.substr(questchari, 3) == "?u=") {
@@ -59,19 +59,9 @@ const Hero: React.FC<HeroProps> = () => {
   const [copyText, setCopyText] = useState<CopyText>("Copy");
   const [myCUrl, setMyCUrl] = useState("");
 
-  const [getPassInput, setGetPassInput] = useState("");
-  const handleGetPassInput = (event: any) => {
-    setGetPassInput(event.target.value);
-  };
-
   const [showPassInput, setShowPassInput] = useState("");
   const handleShowPassInput = (event: any) => {
     setShowPassInput(event.target.value);
-  };
-
-  const [getTextInput, setGetTextInput] = useState("");
-  const handleGetTextInput = (event: any) => {
-    setGetTextInput(event.target.value);
   };
 
   const [curlOption, setCurlOption] = useState("8");
@@ -80,7 +70,8 @@ const Hero: React.FC<HeroProps> = () => {
   };
 
   const myUrl = "/";
-  let apiUrl = "api/index.php";
+  // let apiUrl = "api/index.php";
+  let apiUrl = "../../../sec/api/index.php";
   let url = window.location.href;
   let testDuration: number = 100;
 
@@ -140,11 +131,13 @@ const Hero: React.FC<HeroProps> = () => {
     const get_secret_loading_svg_el = document.getElementById("get_secret_loading_svg");
     saveSvgEl.style.display = "block";
     loadingSvgEl.style.display = "none";
-    get_secret_unlock_svg_el.style.display = "inline";
-    get_secret_loading_svg_el.style.display = "none";
+    if (status == "getPass") {
+      get_secret_unlock_svg_el.style.display = "inline";
+      get_secret_loading_svg_el.style.display = "none";
+    }
   }
-  function textarea_check() {
-    let text = getTextInput;
+  function textarea_check(tx:string) {
+    let text = tx;
     if (text.indexOf("\n") == -1) {
     } else {
       text = text.replace(/&#10;/g, "\n");
@@ -190,19 +183,41 @@ const Hero: React.FC<HeroProps> = () => {
     }
   }
 
-  
+  const schemaWriteEntity = yup.object().shape({
+    oneText: yup
+      .string()
+      .max(3000, "The minimum number of characters allowed for the text is 3000")
+      .required("Enter Your Secret"),
+    onePass: yup.string().max(3000, "The minimum number of characters allowed for the password is 150"),
+  });
+
+  const {
+    register: registerWriteEntity,
+    handleSubmit: handleWriteEntity,
+    formState: { errors },
+  } = useForm({ resolver: yupResolver(schemaWriteEntity) });
 
   function writeEntity(types: string, password: boolean) {
-    const save_svg_el = document.getElementById("save_svg");
-    const loading_svg_el = document.getElementById("loading_svg");
-    save_svg_el.style.display = "none";
-    loading_svg_el.style.display = "block";
+    if (errors.oneText === undefined) {
+    } else {
+      show_error(errors.oneText?.message);
+    }
 
-    setTimeout(runWriteEntity, testDuration);
+    const onHandleWriteEntity = (values: any) => {
+      runWriteEntity(values.oneText, values.onePass);
+    };
 
-    function runWriteEntity() {
-      let key = getPassInput;
-      let text = getTextInput;
+    handleWriteEntity(onHandleWriteEntity)();
+
+    function runWriteEntity(text: string, key: string) {
+      if (key === undefined) {
+        key = "";
+      } else {
+      }
+      const save_svg_el = document.getElementById("save_svg");
+      const loading_svg_el = document.getElementById("loading_svg");
+      save_svg_el.style.display = "none";
+      loading_svg_el.style.display = "block";
       if (text == null || text == "" || text == undefined) {
         show_error("Enter Your Secret!");
       } else {
@@ -213,11 +228,10 @@ const Hero: React.FC<HeroProps> = () => {
             if (password == false) {
             }
             if (password == true) {
-              text = textarea_check();
-              key = getPassInput;
+              text = textarea_check(text);
               let oneTime = otvBtnEl.getAttribute("value");
               let encryptedText = Aes.encrypt(text, key).toString();
-              let curl;
+              let curl: any;
               switch (curlOption) {
                 case "8":
                   curl = randStr(8);
@@ -236,6 +250,7 @@ const Hero: React.FC<HeroProps> = () => {
                 keySize: 256 / 32,
               });
               keyHash = keyHash.toString(Base64);
+
               axios
                 .post(apiUrl, {
                   action: "save_secret",
@@ -248,7 +263,7 @@ const Hero: React.FC<HeroProps> = () => {
                   mythen(response);
                 })
                 .catch(function () {
-                  show_error("Request Error", "The problem is in sending or receiving requests to the server");
+                  show_error("Request Error", "Server connection problem !");
                 });
             }
           }
@@ -256,7 +271,6 @@ const Hero: React.FC<HeroProps> = () => {
       }
     }
   }
-  
 
   function url_clipboard_secret() {
     navigator.clipboard.writeText(responseText);
@@ -272,7 +286,7 @@ const Hero: React.FC<HeroProps> = () => {
       })
       .then(function () {})
       .catch(function () {
-        show_error("Request Error", "The problem is in sending or receiving requests to the server");
+        show_error("Request Error", "Server connection problem !");
       });
 
     let deleteText = document.getElementById("delete_text");
@@ -280,7 +294,6 @@ const Hero: React.FC<HeroProps> = () => {
       deleteText.classList.add("delete");
       setTimeout(() => deleteText.classList.remove("delete"), 3200);
     }
-    
 
     const copy_btn1_el = document.getElementById("copy_btn1");
     copy_btn1_el.style.display = "none";
@@ -319,7 +332,6 @@ const Hero: React.FC<HeroProps> = () => {
     }
   }
   function get_secret() {
-    
     const get_secret_unlock_svg_el = document.getElementById("get_secret_unlock_svg");
     const get_secret_loading_svg_el = document.getElementById("get_secret_loading_svg");
 
@@ -345,7 +357,7 @@ const Hero: React.FC<HeroProps> = () => {
           show_secret(response);
         })
         .catch(function () {
-          show_error("Request Error", "The problem is in sending or receiving requests to the server");
+          show_error("Request Error", "Server connection problem !");
         });
     }
   }
@@ -353,17 +365,14 @@ const Hero: React.FC<HeroProps> = () => {
     setCopyText("Copy");
   }
   function url_clipboard() {
-
     navigator.clipboard.writeText(responseUrl);
     setCopyText("Copied");
     setTimeout(copyTextToDefault, 500);
-
   }
   function new_secret() {
     window.location.replace(myUrl);
-    
   }
-  
+
   function submit_btn_click() {
     writeEntity("secret", true);
   }
@@ -392,8 +401,7 @@ const Hero: React.FC<HeroProps> = () => {
               maxLength={3000}
               className="p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2 max-w-3xl"
               placeholder="Your secret ..."
-              value={getTextInput}
-              onChange={handleGetTextInput}
+              {...registerWriteEntity("oneText")}
             ></textarea>
             <div
               className="flex items-center py-2 px-3 bg-gray-50 rounded-lg dark:bg-gray-700 max-w-3xl m-auto border border-gray-300 dark:border-gray-600"
@@ -478,8 +486,7 @@ const Hero: React.FC<HeroProps> = () => {
                 className="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 style={{ opacity: "0", transition: "0.5s !important" }}
                 placeholder="Password..."
-                value={getPassInput}
-                onChange={handleGetPassInput}
+                {...registerWriteEntity("onePass")}
                 disabled
               />
               <div
@@ -838,8 +845,5 @@ const Hero: React.FC<HeroProps> = () => {
     </>
   );
 };
-
-
-
 
 export default Hero;
