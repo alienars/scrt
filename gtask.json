@@ -1,0 +1,14 @@
+{
+  "suites": [
+    {
+      "title": "scrt",
+      "tasks": [
+        { "title": "Run Dev", "command": "npm run dev", "path": "C:\\laragon\\www\\sec\\" },
+        { "title": "Run Build", "command": "npm run build", "path": "C:\\laragon\\www\\sec\\" },
+        { "title": "Run Cypress", "command": "npx cypress open", "path": "C:\\laragon\\www\\sec\\" }
+      ]
+    }
+  ],
+  "version": "1.1.0",
+  "globalEnv": []
+}
