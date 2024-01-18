@@ -8,13 +8,16 @@
 </h1>
 
 <p align="justify">
-A newer version of <a href="https://github.com/alienars/share-secret" title="share-secret">( share-secret-v1 )</a>
+Live Preview <a href="https://scrt.ra8.ir" title="scrt.ra8.ir">( scrt.ra8.ir )</a>
 <p>
 <p align="justify">
 React + TypeScript + Vite
 <p>
 <p align="justify">
-Share your secret or text with a link <a href="https://scrt.ra8.ir" title="scrt.ra8.ir">( scrt.ra8.ir )</a>
+Share your secret or text with a link
+<p>
+<p align="justify">
+A newer version of <a href="https://github.com/alienars/share-secret" title="share-secret">( share-secret-v1 )</a>
 <p>
 
 ## Features
@@ -34,4 +37,4 @@ Share your secret or text with a link <a href="https://scrt.ra8.ir" title="scrt.
 
 ## RA8
 
-Developed and designed by <a href="https://ra8.ir" title="RA8.ir">RA8.ir</a>
+Developed And Designed By <a href="https://ra8.ir" title="RA8.ir">RA8.ir</a>
