@@ -11,7 +11,7 @@
 Live Preview <a href="https://scrt.ra8.ir" title="scrt.ra8.ir">( scrt.ra8.ir )</a>
 <p>
 <p align="justify">
-React + TypeScript + Vite
+React + TypeScript + Vite + Tailwind + ReactHookForm + Yup + Cypress
 <p>
 <p align="justify">
 Share your secret or text with a link
